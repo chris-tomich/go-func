@@ -1,3 +1,7 @@
+# Idea folder and files
+.idea
+*.iml
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
@@ -22,3 +26,8 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+storage/cli/testdb/*
+storage/cli/testdb-everything/*
+storage/cli/oystr-hypergraph/*
+storage/cli/oystr-mgmt/*
