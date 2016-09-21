@@ -1,29 +1,31 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type StringList []string
 
-func (l StringList) Map(op MapFunc) Query {
+func (l StringList) Map(fn MapFunc) Query {
 	query := NewQuery(l)
 
-	query = query.Map(op)
+	query = query.Map(fn)
 
-	return *query
+	return query
 }
 
-func (l StringList) Filter(op FilterFunc) Query {
+func (l StringList) Filter(fn FilterFunc) Query {
 	query := NewQuery(l)
 
-	query = query.Filter(op)
+	query = query.Filter(fn)
 
-	return *query
+	return query
 }
 
-func (l StringList) Reduce() Query {
+func (l StringList) Reduce(init string, fn ReduceFunc) string {
 	query := NewQuery(l)
 
-	return *query
+	return query.Reduce(init, fn)
 }
 
 type Operation struct {
@@ -50,8 +52,8 @@ type Query struct {
 	operations []*Operation
 }
 
-func NewQuery(list StringList) *Query {
-	query := &Query{
+func NewQuery(list StringList) Query {
+	query := Query{
 		list: list,
 		operations: []*Operation{},
 	}
@@ -59,29 +61,53 @@ func NewQuery(list StringList) *Query {
 	return query
 }
 
-func (l Query) Map(fn MapFunc) *Query {
+func (l Query) Map(fn MapFunc) Query {
 	op := &Operation{}
 	op.Map = fn
 	op.Operation = Map
 
 	l.operations = append(l.operations, op)
 
-	return &l
+	return l
 }
 
-func (l Query) Filter(fn FilterFunc) *Query {
+func (l Query) Filter(fn FilterFunc) Query {
 	op := &Operation{}
 	op.Filter = fn
 	op.Operation = Filter
 
 	l.operations = append(l.operations, op)
 
-	return &l
+	return l
 }
 
-/*func (l Query) Reduce() string {
+func (l Query) Reduce(init string, fn ReduceFunc) string {
+	reduction := init
 
-}*/
+	for _, elem := range l.list {
+		value := elem
+		isIncluded := true
+
+		for _, op := range l.operations {
+			switch (op.Operation) {
+			case Map:
+				value = op.Map(value)
+			case Filter:
+				isIncluded = isIncluded && op.Filter(elem)
+
+				if !isIncluded {
+					break
+				}
+			}
+		}
+
+		if isIncluded {
+			reduction = fn(reduction, value)
+		}
+	}
+
+	return reduction
+}
 
 /*func (l Query) ExecOne(op func (string)) {
 
@@ -117,14 +143,22 @@ func (l Query) ExecAll() StringList {
 
 func main() {
 	bagOfWords := StringList{ "This", "is", "a", "bag", "of", "words." }
-	query := bagOfWords.Map(func (word string) string {
+	query1 := bagOfWords.Map(func (word string) string {
 		return word + " "
 	})
-	stringList := query.ExecAll()
 
-	for _, word := range stringList {
-		fmt.Print(word)
-	}
+	query2 := query1.Filter(func (word string) bool {
+		return word != "is"
+	})
 
-	fmt.Println("")
+	result1 := query1.Reduce("", func (init string, word string) string {
+		return init + word
+	})
+
+	result2 := query2.Reduce("", func (init string, word string) string {
+		return init + word
+	})
+
+	fmt.Println(result1)
+	fmt.Println(result2)
 }
