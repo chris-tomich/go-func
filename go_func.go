@@ -8,7 +8,40 @@ import (
 	"testing"
 )
 
-func StandardLoopExample(bagOfWords t.StringList) {
+func StandardLoopExampleWithConcurrency(bagOfWords t.StringList) {
+	result1 := make(chan string)
+	result2 := make(chan string)
+
+	go (func () {
+		generatedSentence1 := ""
+
+		for _, word := range bagOfWords {
+			generatedSentence1 = generatedSentence1 + word + " "
+		}
+
+		result1 <- generatedSentence1
+	})()
+
+	go (func () {
+		generatedSentence2 := ""
+
+		for _, word := range bagOfWords {
+			if word != Filter1 && word != Filter2 && word != Filter3 && word != Filter4 {
+				generatedSentence2 = generatedSentence2 + word + " "
+			}
+		}
+
+		result2 <- generatedSentence2
+	})()
+
+	sentence1 := <- result1
+	sentence2 := <- result2
+
+	fmt.Println(sentence1)
+	fmt.Println(sentence2)
+}
+
+func StandardLoopExampleWithoutConcurrency(bagOfWords t.StringList) {
 	sentence1, sentence2 := "", ""
 
 	for _, word := range bagOfWords {
@@ -130,7 +163,7 @@ func BenchmarkStandardLoopExample(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		StandardLoopExample(bagOfWords)
+		StandardLoopExampleWithoutConcurrency(bagOfWords)
 	}
 }
 
@@ -146,6 +179,6 @@ func main() {
 	fmt.Println(time.Since(startTime))
 
 	startTime = time.Now()
-	StandardLoopExample(bagOfWords)
+	StandardLoopExampleWithoutConcurrency(bagOfWords)
 	fmt.Println(time.Since(startTime))
 }
