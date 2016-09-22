@@ -1,4 +1,4 @@
-package main
+package benchmarks
 
 import (
 	"fmt"
@@ -19,8 +19,8 @@ func StandardLoopExample(bagOfWords t.StringList) {
 		}
 	}
 
-	fmt.Println(sentence1)
-	fmt.Println(sentence2)
+	fmt.Sprintln(sentence1)
+	fmt.Sprintln(sentence2)
 }
 
 func TypedExampleWithConcurrency(bagOfWords t.StringList) {
@@ -48,8 +48,8 @@ func TypedExampleWithConcurrency(bagOfWords t.StringList) {
 
 	sentence1 := <- result1
 	sentence2 := <- result2
-	fmt.Println(sentence1)
-	fmt.Println(sentence2)
+	fmt.Sprintln(sentence1)
+	fmt.Sprintln(sentence2)
 }
 
 func TypedExampleWithoutConcurrency(bagOfWords t.StringList) {
@@ -64,8 +64,8 @@ func TypedExampleWithoutConcurrency(bagOfWords t.StringList) {
 
 	sentence2 := query2.Reduce("", func(init string, word string) string { return init + word })
 
-	fmt.Println(sentence1)
-	fmt.Println(sentence2)
+	fmt.Sprintln(sentence1)
+	fmt.Sprintln(sentence2)
 }
 
 func GenerateRandomPosition(maxPosition int) int {
@@ -132,20 +132,4 @@ func BenchmarkStandardLoopExample(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		StandardLoopExample(bagOfWords)
 	}
-}
-
-func main() {
-	bagOfWords := GenerateBagOfWords()
-
-	startTime := time.Now()
-	TypedExampleWithConcurrency(bagOfWords)
-	fmt.Println(time.Since(startTime))
-
-	startTime = time.Now()
-	TypedExampleWithoutConcurrency(bagOfWords)
-	fmt.Println(time.Since(startTime))
-
-	startTime = time.Now()
-	StandardLoopExample(bagOfWords)
-	fmt.Println(time.Since(startTime))
 }
