@@ -1,8 +1,8 @@
-package main
+package benchmarks
 
 import (
 	"fmt"
-	t "github.com/chris-tomich/go-func/typed_example"
+	t "github.com/chris-tomich/go-func/string_list_example"
 	"time"
 	"math/rand"
 	"testing"
@@ -37,8 +37,8 @@ func StandardLoopExampleWithConcurrency(bagOfWords t.StringList) {
 	sentence1 := <- result1
 	sentence2 := <- result2
 
-	fmt.Println(sentence1)
-	fmt.Println(sentence2)
+	fmt.Sprintln(sentence1)
+	fmt.Sprintln(sentence2)
 }
 
 func StandardLoopExampleWithoutConcurrency(bagOfWords t.StringList) {
@@ -52,8 +52,8 @@ func StandardLoopExampleWithoutConcurrency(bagOfWords t.StringList) {
 		}
 	}
 
-	fmt.Println(sentence1)
-	fmt.Println(sentence2)
+	fmt.Sprintln(sentence1)
+	fmt.Sprintln(sentence2)
 }
 
 func TypedExampleWithConcurrency(bagOfWords t.StringList) {
@@ -81,8 +81,8 @@ func TypedExampleWithConcurrency(bagOfWords t.StringList) {
 
 	sentence1 := <- result1
 	sentence2 := <- result2
-	fmt.Println(sentence1)
-	fmt.Println(sentence2)
+	fmt.Sprintln(sentence1)
+	fmt.Sprintln(sentence2)
 }
 
 func TypedExampleWithoutConcurrency(bagOfWords t.StringList) {
@@ -97,8 +97,8 @@ func TypedExampleWithoutConcurrency(bagOfWords t.StringList) {
 
 	sentence2 := query2.Reduce("", func(init string, word string) string { return init + word })
 
-	fmt.Println(sentence1)
-	fmt.Println(sentence2)
+	fmt.Sprintln(sentence1)
+	fmt.Sprintln(sentence2)
 }
 
 func GenerateRandomPosition(maxPosition int) int {
@@ -158,27 +158,20 @@ func BenchmarkTypedExampleWithoutConcurrency(b *testing.B) {
 	}
 }
 
-func BenchmarkStandardLoopExample(b *testing.B) {
+func BenchmarkStandardLoopExampleWithConcurrency(b *testing.B) {
+	bagOfWords := GenerateBagOfWords()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		StandardLoopExampleWithConcurrency(bagOfWords)
+	}
+}
+
+func BenchmarkStandardLoopExampleWithoutConcurrency(b *testing.B) {
 	bagOfWords := GenerateBagOfWords()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		StandardLoopExampleWithoutConcurrency(bagOfWords)
 	}
-}
-
-func main() {
-	bagOfWords := GenerateBagOfWords()
-
-	startTime := time.Now()
-	TypedExampleWithConcurrency(bagOfWords)
-	fmt.Println(time.Since(startTime))
-
-	startTime = time.Now()
-	TypedExampleWithoutConcurrency(bagOfWords)
-	fmt.Println(time.Since(startTime))
-
-	startTime = time.Now()
-	StandardLoopExampleWithoutConcurrency(bagOfWords)
-	fmt.Println(time.Since(startTime))
 }
