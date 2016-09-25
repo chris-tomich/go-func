@@ -18,7 +18,16 @@ func main() {
 	// The package name will be the package declared at the top of this file. For example, in this file it would be "main".
 	// It does not include the full package location.
 	packageName := os.Getenv("GOPACKAGE")
-	fileName := os.Getenv("GOFILE") + "_" + *collectionType + "_generated.go"
+
+	fileName := os.Getenv("GOFILE")
+
+	extIndex := strings.Index(fileName, ".go")
+
+	if extIndex >= 0 {
+		fileName = fileName[:extIndex]
+	}
+
+	fileName = fileName + "_" + strings.ToLower(*collectionType) + "_generated.go"
 
 	replacer := strings.NewReplacer(template.PackageToken, packageName, template.SingularTypeToken, *singularType, template.CollectionTypeToken, *collectionType)
 
